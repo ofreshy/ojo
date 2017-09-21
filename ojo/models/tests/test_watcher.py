@@ -54,10 +54,6 @@ class TestWatcherJobFactory(TestCase):
         self.assertEqual(
             job.stage, JobStage.created
         )
-        self.assertTrue(
-            job.file_name.startswith("111")
-        )
-        self.assertFalse(job.is_dir)
 
     def test_3_job_from_3_files(self):
         self.create_file("111", "111111111")

@@ -1,4 +1,9 @@
-from configparser import ConfigParser
+
+try:
+    import configparser as ConfigParser
+except ImportError:
+    import ConfigParser
+
 from os import path
 
 import logging
@@ -8,12 +13,12 @@ CONFIG_FILE = path.join(THIS_DIR, "config.ini")
 
 
 def load(config_file=CONFIG_FILE):
-    config = ConfigParser(allow_no_value=True)
+    config = ConfigParser.ConfigParser(allow_no_value=True)
     config.read(config_file, "UTF-8")
     return load_from_config(config)
 
 
-def load_from_config(config: ConfigParser):
+def load_from_config(config):
     _setup_logging(config)
     return config
 
