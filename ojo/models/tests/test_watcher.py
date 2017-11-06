@@ -33,7 +33,7 @@ class TestWatcherJobFactory(TestCase):
             dir=path or self.path,
             delete=False,
         )
-        f.write(content)
+        f.write(bytes(content, encoding="utf-8"))
         f.close()
         time.sleep(1)
 
