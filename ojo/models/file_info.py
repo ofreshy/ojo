@@ -42,3 +42,6 @@ class FileInfo(object):
     # Added by rar service
     to_par_path = attr.ib(default=None)
     vol_size = attr.ib(default=None)
+
+    # Added by error service if on error
+    error_path = attr.ib(default=None)

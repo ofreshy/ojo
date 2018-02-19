@@ -1,12 +1,48 @@
 import logging
+import os
+from os import path
 
-
+from ojo.services import move_path
+from ojo.models.file_info import FileInfo
 from ojo.models.job import JobStage
 
 # TODO fill those in
 
+
 def _created_handler(job, error_dir):
-    pass
+    """
+
+    :param job:
+    :param error_dir:
+    :return:
+    """
+    fi: FileInfo = job.file_info
+
+    if not path.exists(fi.origin_path):
+        logging.warning("error service has nothing to do with job, as path {} does not exist.".format(
+                fi.origin_path,
+            )
+        )
+        return
+
+    try:
+        error_path = path.join(error_dir, str(job.id))
+        os.makedirs(error_path)
+        move_path(fi.origin_path, error_path)
+        logging.info(
+            "error service moved files from {0} to {1}".format(
+                fi.origin_path,
+                fi.error_path,
+            )
+        )
+        fi.error_path = error_path
+    except Exception as e:
+        logging.warning(
+            "error service cannot move files in job {}, {}".format(
+                job,
+                e,
+            )
+        )
 
 
 def _moved_handler(job, error_dir):

@@ -4,12 +4,24 @@ from ojo.errors import OjoError, JobStageError, UnderlyingExceptionError
 
 
 class BaseService(object):
+    """
+    Use for all main services
+
+    each service has to call super with its job stage before and after,
+    and implement the do_inner_job method below
+    """
 
     def __init__(self, job_stage_before, job_stage_after):
         self.job_stage_before = job_stage_before
         self.job_stage_after = job_stage_after
 
     def do_inner_job(self, job):
+        """
+        Implementation services should implement their main body of work here
+
+        :param job: to work on. Its stage was confirmed to be in  job_stage_before
+        :return: job after work is done. Its stage will be incremented to job_stage_after
+        """
         raise NotImplemented
 
     def do_job(self, job):
@@ -48,4 +60,3 @@ class BaseService(object):
 
         job.stage = self.job_stage_after
         return job
-
