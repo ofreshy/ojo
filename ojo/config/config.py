@@ -4,6 +4,7 @@ try:
 except ImportError:
     import ConfigParser
 
+import os
 from os import path
 
 import logging
@@ -20,6 +21,7 @@ def load(config_file=CONFIG_FILE):
 
 def load_from_config(config):
     _setup_logging(config)
+    _setup_dirs(config)
     return config
 
 
@@ -31,3 +33,8 @@ def _setup_logging(config):
         format='%(asctime)s - %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
+
+
+def _setup_dirs(config):
+    for _, v in config["dirs"].items():
+        os.makedirs(v, exist_ok=True)
