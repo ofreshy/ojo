@@ -1,16 +1,10 @@
 
 from os import path
-import shutil
 
+from ojo.errors import MoveError
+from ojo.services import move_path
+from ojo.models.file_info import FileInfo
 from ojo.models.job import JobStage
-
-
-class OjoError(Exception):
-    pass
-
-
-class MoveError(OjoError):
-    pass
 
 
 class MoveService(object):
@@ -24,18 +18,20 @@ class MoveService(object):
         self.move_dir = move_dir
 
     def do_job(self, job):
+        fi: FileInfo = job.file_info
+        origin_path = fi.origin_path
         try:
-            shutil.move(job.origin_path, self.move_dir)
+            move_path(origin_path, self.move_dir)
         except Exception as e:
             job.add_error(("cannot move", e))
             return job
 
-        move_to_path = path.join(self.move_dir, path.basename(job.origin_path))
-        if not path.exists(move_to_path):
+        to_rar_path = path.join(self.move_dir, fi.base_name)
+        if not path.exists(to_rar_path):
             job.add_error(("cannot move", MoveError()))
             return job
 
-        job.move_to_path = move_to_path
+        fi.to_rar_path = to_rar_path
         job.stage = JobStage.moved
 
         return job

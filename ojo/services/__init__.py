@@ -12,10 +12,7 @@ except ImportError:
 
 
 def move_path(src, dest):
-    if os.path.exists(dest):
-        raise ValueError("dest already exists")
-    else:
-        os.makedirs(path.dirname(dest), exist_ok=True)
+    os.makedirs(path.dirname(dest), exist_ok=True)
     shutil.move(src, dest)
 
 

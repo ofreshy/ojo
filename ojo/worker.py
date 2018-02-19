@@ -2,6 +2,15 @@ import logging
 
 
 def make_worker(name, service, work_q, done_q, error_q):
+    """
+    Closure to make a worker with given params
+    :param name: worker name for context, e.g. worker-rar-1
+    :param service: the service that is used for doing the job
+    :param work_q: q to get work from
+    :param done_q: q to put done jobs on
+    :param error_q: q for jobs that terminated with error
+    :return: worker with given params, ready to consume jobs
+    """
     def worker():
         while True:
             job = work_q.get()
@@ -27,6 +36,13 @@ def make_worker(name, service, work_q, done_q, error_q):
 
 
 def make_error_worker(name, error_service, error_q):
+    """
+    Makes the end of line worker - for jobs the terminated with errors
+    :param name: for context, such as error-worker-1
+    :param error_service: the error service that handles the errors
+    :param error_q: to consume jobs from
+    :return: error worker ready to work
+    """
     def worker():
         while True:
             job = error_q.get()

@@ -7,6 +7,8 @@ import attr
 
 from collections import OrderedDict
 
+from ojo.models.file_info import FileInfo
+
 
 class JobStage(Enum):
     created = 1
@@ -18,12 +20,18 @@ class JobStage(Enum):
 
 @attr.s
 class Job(object):
+
+    @classmethod
+    def make(cls, origin_path):
+        return cls(
+            id=uuid.uuid4(),
+            start_time=time(),
+            file_info=FileInfo.make(origin_path),
+        )
+
     id = attr.ib()
     start_time = attr.ib()
-    origin_path = attr.ib()
-    move_to_path = attr.ib(default=None)
-    to_par_path = attr.ib(default=None)
-    file_info = attr.ib(default=None)
+    file_info = attr.ib()
 
     _current_stage = attr.ib(default=JobStage.created)
     stage = attr.ib(default=JobStage.created)
@@ -45,10 +53,3 @@ class Job(object):
         self.completed_stages[self._current_stage] = time()
         self._current_stage = stage
 
-
-def make_new_job(origin_path):
-    return Job(
-        id=uuid.uuid4(),
-        start_time=time(),
-        origin_path=origin_path
-    )

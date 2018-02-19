@@ -2,7 +2,7 @@ import logging
 
 from ojo.constants import MB
 from ojo.errors import RarError
-from ojo.models.job import JobStage, Job
+from ojo.models.job import JobStage
 from ojo.models.file_info import FileInfo
 from ojo.services import *
 
@@ -16,8 +16,14 @@ def is_installed():
 
 
 def execute(fi: FileInfo):
-    extra_args = ("-v%s" % fi.vol_size, fi.to_par_path, fi.abs_path)
-    run_command(RAR_COMMAND, BASE_RAR_ARGS + extra_args)
+    """
+    Runs a command from fi object such as
+    >>> rar a -m0 -ep -ed -v100000 path/to/destination path/to/src
+    :param fi: with vol_size, to_par_path and abs_path initialized
+    :return: result code of sub process code, raises an error if not 0
+    """
+    extra_args = ("-v%s" % fi.vol_size, fi.to_par_path, fi.to_rar_path)
+    return run_command(RAR_COMMAND, BASE_RAR_ARGS + extra_args)
 
 
 def calc_rar_volume_size(file_size_kb):
@@ -36,29 +42,6 @@ def calc_rar_volume_size(file_size_kb):
     return rar_vol_size_mb * MB
 
 
-def make_file_info(job: Job):
-    origin_path, src_path = job.origin_path, job.move_to_path
-    abs_path = os.path.abspath(src_path)
-    parent_path = os.path.dirname(src_path)
-    base_name = os.path.basename(src_path)
-    file_name, _, extension = base_name.partition(".")
-    file_size_mb = os.stat(src_path).st_size / MB
-
-    rel_path = os.path.relpath(src_path, parent_path)
-    rel_path = "/".join(rel_path.split("/")[:-1] + [file_name])
-
-    return FileInfo(
-        origin_path,
-        abs_path,
-        parent_path,
-        rel_path,
-        base_name,
-        file_name,
-        extension,
-        file_size_mb,
-    )
-
-
 class RarService(object):
     @classmethod
     def make(cls, config):
@@ -74,7 +57,7 @@ class RarService(object):
             job.add_error(RarError())
             return job
         try:
-            fi = make_file_info(job)
+            fi = job.file_info
             to_par_path = path.join(self.to_par_path, fi.file_name, fi.file_name)
             create_path(to_par_path)
             vol_size = calc_rar_volume_size(fi.file_size_mb)
@@ -82,8 +65,7 @@ class RarService(object):
             fi.vol_size = vol_size
             logging.info("got file info : {0}".format(fi))
             execute(fi)
-            job.to_par_path = to_par_path
-            job.file_info = fi
+
             job.stage = JobStage.rarred
             return job
         except Exception as e:

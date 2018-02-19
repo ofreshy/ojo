@@ -1,17 +1,12 @@
 import logging
 
-from watchdog.observers import Observer
-
-from ojo.models.job import make_new_job
-
 from ojo.services.error_service import ErrorService
 from ojo.services.move_service import MoveService
 from ojo.services.rar_service import RarService
-from ojo.services.watch_service import WatchService
 
 from multiprocessing import JoinableQueue, Process
 from ojo.config import config
-
+from ojo import observer
 from ojo.worker import make_error_worker, make_worker
 
 
@@ -19,21 +14,15 @@ class Builder(object):
     def __init__(self, conf=None):
         self.conf = conf or config.load()
 
-        self.observer = Observer()
-        self.error_service = ErrorService.make(self.conf)
-
         self.to_move_q = JoinableQueue()
         self.to_rar_q = JoinableQueue()
         self.to_par_q = JoinableQueue()
         self.error_q = JoinableQueue()
 
-        self._processes = []
+        self.observer = observer.build_observer(self.conf, self.to_move_q)
+        self.error_service = ErrorService.make(self.conf)
 
-    def _build_observer(self):
-        watch_path = self.conf["observer"]["dir"]
-        event_handler = WatchService(make_new_job, self.to_move_q)
-        self.observer.schedule(event_handler, watch_path, recursive=False)
-        return self.observer
+        self._processes = []
 
     def _build_error_processes(self):
         self._processes.append(
@@ -83,7 +72,6 @@ class Builder(object):
         return processes
 
     def build(self):
-        self._build_observer()
         self._build_error_processes()
         self._build_move_processes()
         self._build_rar_processes()

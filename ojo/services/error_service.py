@@ -3,6 +3,7 @@ import logging
 
 from ojo.models.job import JobStage
 
+# TODO fill those in
 
 def _created_handler(job, error_dir):
     pass
