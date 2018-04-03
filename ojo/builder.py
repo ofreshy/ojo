@@ -2,6 +2,7 @@ import logging
 
 from ojo.services.error_service import ErrorService
 from ojo.services.move_service import MoveService
+from ojo.services.par2_service import Par2Service
 from ojo.services.rar_service import RarService
 
 from multiprocessing import JoinableQueue, Process
@@ -17,6 +18,7 @@ class Builder(object):
         self.to_move_q = JoinableQueue()
         self.to_rar_q = JoinableQueue()
         self.to_par_q = JoinableQueue()
+        self.to_upload_q = JoinableQueue()
         self.error_q = JoinableQueue()
 
         self.observer = observer.build_observer(self.conf, self.to_move_q)
@@ -51,7 +53,16 @@ class Builder(object):
             RarService.make(self.conf),
             self.to_rar_q,
             self.to_par_q,
-            5,
+            int(self.conf["rar_service"]["num_workers"]),
+        )
+
+    def _build_par2_processes(self):
+        self._create_processes(
+            "par2",
+            Par2Service.make(self.conf),
+            self.to_par_q,
+            self.to_upload_q,
+            int(self.conf["par2_service"]["num_workers"]),
         )
 
     def _create_processes(self, base_name, service, work_q, done_q, num):
@@ -75,6 +86,7 @@ class Builder(object):
         self._build_error_processes()
         self._build_move_processes()
         self._build_rar_processes()
+        self._build_par2_processes()
         return self
 
     def start(self):

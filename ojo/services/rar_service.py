@@ -2,16 +2,17 @@ import logging
 
 from ojo.constants import MB
 from ojo.models.job import JobStage
+from ojo import services
 from ojo.services import *
 from ojo.services.base_service import BaseService
 
 RAR_COMMAND = "rar"
 
-BASE_RAR_ARGS = ("a", "-m0", "-ep", "-ed")
+BASE_RAR_ARGS = ("a", "-m0", "-ep", "-ed", "-df", "-r")
 
 
 def is_installed():
-    return is_installed(RAR_COMMAND)
+    return services.is_installed(RAR_COMMAND)
 
 
 def calc_rar_volume_size(file_size_kb):
@@ -61,8 +62,18 @@ class RarService(BaseService):
         """
             Runs a command from fi object such as
             >>> rar a -m0 -ep -ed -v100000 path/to/destination path/to/src
+            
+            -m0 - compression level 0
+            -ep - Exclude paths from names
+            -ed - Do not add empty directories
+            -r -  Recurse subdirectories
+            -df - Delete files after archiving
+            -v{vol_size} - Create volumes with size=<size>*1000 [*1024, *1]
+            
+             note that we provide to rar the file or directory to archive. It works recursively
         """
 
-        run_command(RAR_COMMAND, BASE_RAR_ARGS + extra_args)
-
+        run_command(RAR_COMMAND, rar_args)
+        logging.info("deleting rar path after job {}".format(fi.to_rar_path))
+        #shutil.rmtree(fi.to_rar_path)
         return job

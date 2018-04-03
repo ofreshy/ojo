@@ -37,7 +37,7 @@ def make_worker(name, service, work_q, done_q, error_q):
 
 def make_error_worker(name, error_service, error_q):
     """
-    Makes the end of line worker - for jobs the terminated with errors
+    Closure to make the end of line worker - for jobs the terminated with errors
     :param name: for context, such as error-worker-1
     :param error_service: the error service that handles the errors
     :param error_q: to consume jobs from

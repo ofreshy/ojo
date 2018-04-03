@@ -6,9 +6,11 @@ import shutil
 import logging
 
 if __name__ == "__main__":
+    print("STARTED")
     con = config.load()
     to_watch_dir = con["dirs"]["to_watch_dir"]
     to_rar_dir = con["dirs"]["to_rar_dir"]
+    to_upload_dir = con["dirs"]["to_upload_dir"]
     files_dir = con["dirs"]["src_files_dir"]
 
     dirs_to_cp = os.listdir(files_dir)
