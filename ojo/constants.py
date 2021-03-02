@@ -1,3 +1,3 @@
 
-# Unit here is one kio byte
+# Unit here is one kilo byte
 MB = 1000
