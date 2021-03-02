@@ -105,5 +105,6 @@ ENV/
 # mypy
 .mypy_cache/
 
-# configuration with secret keys
+# files with secret keys
 config.json
+sshojo.sh
